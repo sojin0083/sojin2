@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="egovframework.openlink.home.service.impl.BoardMapper">
+	<!-- 로그인체크 -->
+	<select id="selectLoginCheck" parameterType="UserVO" resultType="String">
+		SELECT TU.USER_NAME
+		FROM TB_users AS TU
+		WHERE 1=1
+		AND TU.USER_ID = #{user_id}
+		AND	TU.USER_PW = #{user_pw}
+		AND TU.DEL_CHECK = 0
+	</select>
+	
+	<!-- 로그인체크 -->
+	<select id="autoLoginCheck" parameterType="UserVO" resultType="String">
+		SELECT TU.USER_NAME
+		FROM TB_users AS TU
+		WHERE 1=1
+		AND TU.USER_ID = #{user_id}
+		AND TU.DEL_CHECK = 0
+	</select>
+	
+	<!-- 주간업무 조회 -->
+	<select id="searchWeeklyReport" parameterType="BoardVO" resultType="BoardVO">
+		SELECT TW.`no`, TP.project_name, TW.term_year, TW.term_year, TW.term_week, TU.user_name AS user_id, TW.last_week, TW.next_week, TW.etc
+		FROM TB_weekly_report AS TW, TB_users AS TU, TB_project AS TP
+		WHERE 1=1
+		AND TW.term_year = #{term_year}
+		AND TW.term_week = #{term_week}
+		AND TW.del_check = 0
+		AND TW.user_id = TU.user_id
+		AND TW.report_code = TP.project_code
+		ORDER BY TU.`no` ASC, TU.auth DESC
+	</select>
+	
+	<!-- 주간업무 작성자 조회 -->
+	<select id="searchWeeklyReportWriter" parameterType="BoardVO" resultType="BoardVO">
+		SELECT TU.user_name AS user_id
+		FROM TB_weekly_report AS TW, TB_users AS TU
+		WHERE 1=1
+		AND TW.term_year = #{term_year}
+		AND TW.term_week = #{term_week}
+		AND TW.del_check = 0
+		AND TW.user_id = TU.user_id
+		GROUP BY TW.user_id
+		ORDER BY TU.`no` ASC, TU.auth DESC
+	</select>
+	
+	<!-- 참여중인 프로젝트 조회 -->
+	<select id="searchProjectList" parameterType="UserVO" resultType="BoardVO">
+		SELECT TP.project_code, TP.project_name
+		FROM TB_users AS TU
+		LEFT JOIN TB_member AS TM
+			ON TU.user_id = TM.member
+		LEFT JOIN TB_project AS TP
+			ON TM.project_code = TP.project_code
+		WHERE 
+		TM.del_check = 0
+		AND TP.del_check = 0
+		AND TU.user_id = #{user_id}
+	</select>
+	
+	<!-- 지난주 주간업무 조회(계획) -->
+	<select id="searchLastWeeklyReport" parameterType="BoardVO" resultType="String">
+		SELECT TWR.next_week
+		FROM TB_weekly_report AS TWR
+		WHERE 
+		TWR.term_year = #{last_term_year}
+		AND TWR.term_week = #{last_term_week}
+		AND TWR.user_id = #{user_id}
+		AND TWR.report_code = #{project_code}
+		AND TWR.del_check = 0
+	</select>
+	
+	<!-- 주간업무 작성 -->
+	<insert id="insertReport" parameterType="BoardVO">
+		INSERT INTO TB_weekly_report
+		VALUES(
+			NO,
+			#{project_code},
+			#{reg_date},
+			'',
+			#{term_year},
+			#{term_week},
+			#{user_id},
+			#{last_week},
+			#{next_week},
+			#{etc},
+			0)
+	</insert>
+	
+	<!-- 지난주 주간업무 조회(계획) -->
+	<select id="insertReport_lastweek_check" parameterType="BoardVO" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_weekly_report AS TWR
+		WHERE 
+			TWR.report_code = #{project_code}
+			AND TWR.term_year = #{term_year}
+			AND TWR.term_week = #{term_week}
+			AND TWR.user_id = #{user_id}
+			AND TWR.del_check = 0
+	</select>
+	
+	<!-- 주간업무 작성 -->
+	<insert id="insertReport_lastweek" parameterType="BoardVO">
+		INSERT INTO TB_weekly_report
+		VALUES(
+			NO,
+			#{project_code},
+			#{reg_date},
+			'',
+			#{term_year},
+			#{term_week},
+			#{user_id},
+			'',
+			'',
+			'',
+			0)
+	</insert>
+	
+	<!-- 주간업무 작성확인(이번주) -->
+	<select id="alreadyWeeklyReport" parameterType="BoardVO" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_weekly_report AS TWR
+		WHERE 
+			TWR.report_code = #{project_code}
+			AND TWR.term_year = #{term_year}
+			AND TWR.term_week = #{term_week}
+			AND TWR.user_id = #{user_id}
+			AND TWR.del_check = 0
+	</select>
+	
+	<!-- 수정페이지 조회 -->
+	<select id="searchReportList" parameterType="BoardVO" resultType="BoardVO">
+		SELECT @rownum:=@rownum+1 AS no, AAA.term_year, AAA.term_week
+		FROM 
+			(SELECT TWR.term_year, TWR.term_week
+			FROM TB_weekly_report AS TWR
+			WHERE
+				TWR.user_id = #{user_id}
+				AND TWR.del_check = 0
+			GROUP BY TWR.term_week
+			ORDER BY cast(term_year AS UNSIGNED) DESC, cast(term_week AS UNSIGNED) DESC) AAA,
+			(SELECT @rownum:=0) AS TMP
+	</select>
+	
+	<!-- 수정항목 작성 프로젝트 조회 -->
+	<select id="searchReportProject" parameterType="BoardVO" resultType="BoardVO">
+		SELECT TP.project_code, TP.project_name
+		FROM TB_weekly_report AS TWR, TB_project AS TP
+		WHERE 
+			TWR.report_code = TP.project_code
+			AND TWR.term_year = #{term_year}
+			AND TWR.term_week = #{term_week}
+			AND TWR.user_id = #{user_id}
+			AND TWR.del_check = 0
+	</select>
+	
+	<!-- 수정항목 업무보고 블러오기 -->
+	<select id="loadReport" parameterType="BoardVO" resultType="BoardVO">
+		SELECT TWR.last_week, TWR.next_week, TWR.etc
+		FROM TB_weekly_report AS TWR
+		WHERE
+			TWR.term_year = #{term_year}
+			AND TWR.term_week = #{term_week}
+			AND TWR.user_id = #{user_id}
+			AND TWR.report_code = #{project_code}
+			AND TWR.del_check = 0
+	</select>
+	
+	<!-- 업무보고 수정 -->
+	<update id="updateWeeklyReport" parameterType="BoardVO">
+		UPDATE TB_weekly_report AS TWR SET
+		TWR.last_week = #{last_week},
+		TWR.next_week = #{next_week},
+		TWR.etc = #{etc}
+		WHERE 
+			TWR.report_code = #{project_code}
+			AND TWR.term_year = #{term_year}
+			AND TWR.term_week = #{term_week}
+			AND TWR.user_id = #{user_id}
+			AND TWR.del_check = 0
+	</update>
+	
+	<!-- 주간업무 삭제(주별) -->
+	<update id="deleteReportGroup" parameterType="BoardVO">
+		UPDATE TB_weekly_report AS TWR SET
+		TWR.del_check = 1
+		WHERE 
+			TWR.term_year = #{term_year}
+			AND TWR.term_week = #{term_week}
+			AND TWR.user_id = #{user_id}
+			AND TWR.del_check = 0
+	</update>
+</mapper>

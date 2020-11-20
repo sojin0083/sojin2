@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="egovframework.openlink.home.service.impl.HRMMapper">
+
+	<select id="getCateProfile" parameterType="CateVO" resultType="CateVO">
+		SELECT CT.CT_ID AS ctId, CT.CT_NAME AS ctName
+		FROM TB_PROFILE_CT AS CT
+		WHERE 1=1
+		AND CT.USE_YN = 'Y'
+	</select>
+	
+	<select id="getCateEvidence" parameterType="CateVO" resultType="CateVO">
+		SELECT CT.CT_ID AS ctId, CT.CT_NAME AS ctName
+		FROM TB_EVIDENCE_CT AS CT
+		WHERE 1=1
+		AND CT.USE_YN = 'Y'
+	</select>
+	
+	<select id="getCateForm" parameterType="CateVO" resultType="CateVO">
+		SELECT CT.CT_ID AS ctId, CT.CT_NAME AS ctName
+		FROM TB_FORM_CT AS CT
+		WHERE 1=1
+		AND CT.USE_YN = 'Y'
+	</select>
+	
+	<select id="getProList" resultType="HRMVO">
+		<!-- SELECT @rownum:=@rownum+1 AS no, TPL.PRO_CD AS proCd, TPL.PRO_NAME AS proName, TPL.DEP AS dep,
+			TPL.STAT AS stat, TPL.REG_DATE AS regDate, TPL.RMK AS rmk
+		FROM TB_PROFILE_LIST AS TPL,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TPL.USE_YN = 'Y' -->
+		SELECT @rownum:=@rownum+1 AS NO, TPL.PRO_CD AS proCd, TPL.PRO_NAME AS proName, TPL.DEP AS dep,
+			TPL.STAT AS stat, TPL.REG_DATE AS regDate, TPL.RMK AS rmk, TBC.CT_NAME AS ctName
+		FROM TB_PROFILE_LIST AS TPL
+		LEFT JOIN TB_PROFILE_CT AS TBC
+		ON TPL.CT_ID = TBC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TPL.USE_YN = 'Y'
+	</select>
+	
+	<select id="getProfile" parameterType="String" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TPL.PRO_CD AS proCd, TPL.PRO_NAME AS proName, TPL.DEP AS dep,
+			TPL.STAT AS stat, TPL.REG_DATE AS regDate, TPL.RMK AS rmk, TBC.CT_NAME AS ctName
+		FROM TB_PROFILE_LIST AS TPL
+		LEFT JOIN TB_PROFILE_CT AS TBC
+		ON TPL.CT_ID = TBC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TPL.USE_YN = 'Y'
+		AND TPL.PRO_CD = #{proCd}
+	</select>
+	
+	<select id="getProCdNum" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_PROFILE_LIST AS TPL
+		WHERE 1=1
+		AND TPL.USE_YN = 'Y'
+	</select>
+	
+	<insert id="profileInsert" parameterType="HRMVO">
+		INSERT INTO TB_PROFILE_LIST(PRO_CD, PRO_NAME, DEP, STAT, REG_DATE, USE_YN, RMK, CT_ID)
+		VALUES(#{proCd}, #{proName}, #{dep}, #{stat}, #{regDate}, 'Y', #{rmk}, #{ctId})
+	</insert>
+</mapper>

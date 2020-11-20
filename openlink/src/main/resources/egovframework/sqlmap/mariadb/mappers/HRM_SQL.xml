@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="egovframework.openlink.home.service.impl.HRMMapper">
+
+	<select id="getCateProfile" parameterType="CateVO" resultType="CateVO">
+		SELECT CT.CT_ID AS ctId, CT.CT_NAME AS ctName
+		FROM TB_PROFILE_CT AS CT
+		WHERE 1=1
+		AND CT.USE_YN = 'Y'
+	</select>
+	
+	<select id="getCateEvidence" parameterType="CateVO" resultType="CateVO">
+		SELECT CT.CT_ID AS ctId, CT.CT_NAME AS ctName
+		FROM TB_EVIDENCE_CT AS CT
+		WHERE 1=1
+		AND CT.USE_YN = 'Y'
+	</select>
+	
+	<select id="getCateForm" parameterType="CateVO" resultType="CateVO">
+		SELECT CT.CT_ID AS ctId, CT.CT_NAME AS ctName
+		FROM TB_FORM_CT AS CT
+		WHERE 1=1
+		AND CT.USE_YN = 'Y'
+	</select>
+	
+	<select id="getProList" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TPL.PRO_CD AS proCd, TPL.PRO_NAME AS proName, TPL.DEP AS dep,
+			TPL.STAT AS stat, TPL.REG_DATE AS regDate, TPL.RMK AS rmk, TBC.CT_NAME AS ctName
+		FROM TB_PROFILE_LIST AS TPL
+		LEFT JOIN TB_PROFILE_CT AS TBC
+		ON TPL.CT_ID = TBC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TPL.USE_YN = 'Y'
+	</select>
+	
+	<select id="getProListFilter" parameterType="String" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TPL.PRO_CD AS proCd, TPL.PRO_NAME AS proName, TPL.DEP AS dep,
+			TPL.STAT AS stat, TPL.REG_DATE AS regDate, TPL.RMK AS rmk, TBC.CT_NAME AS ctName
+		FROM TB_PROFILE_LIST AS TPL
+		LEFT JOIN TB_PROFILE_CT AS TBC
+		ON TPL.CT_ID = TBC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TPL.USE_YN = 'Y'
+		AND TBC.CT_ID = #{ctId}
+	</select>
+	
+	<select id="getProfile" parameterType="String" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TPL.PRO_CD AS proCd, TPL.PRO_NAME AS proName, TPL.DEP AS dep,
+			TPL.STAT AS stat, TPL.REG_DATE AS regDate, TPL.RMK AS rmk, TBC.CT_ID AS ctId, TBC.CT_NAME AS ctName
+		FROM TB_PROFILE_LIST AS TPL
+		LEFT JOIN TB_PROFILE_CT AS TBC
+		ON TPL.CT_ID = TBC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TPL.USE_YN = 'Y'
+		AND TPL.PRO_CD = #{proCd}
+	</select>
+	
+	<select id="getProCdNum" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_PROFILE_LIST AS TPL
+		WHERE 1=1
+	</select>
+	
+	<insert id="profileInsert" parameterType="HRMVO">
+		INSERT INTO TB_PROFILE_LIST(PRO_CD, PRO_NAME, DEP, STAT, REG_DATE, USE_YN, RMK, CT_ID)
+		VALUES(#{proCd}, #{proName}, #{dep}, #{stat}, #{regDate}, 'Y', #{rmk}, #{ctId})
+	</insert>
+	
+	<insert id="profileDocUpload" parameterType="HRMVO">
+		INSERT INTO TB_PROFILE_DOC(PRO_CD, PRO_TYPE, DOC_NAME, LOCA, USE_YN)
+		VALUES(#{proCd}, #{proType}, #{docName}, #{loca}, 'Y')
+	</insert>
+	
+	<select id="getDockList" parameterType="String" resultType="HRMVO">
+		SELECT TPD.PRO_CD AS proCd, TPD.PRO_TYPE AS proType, TPD.DOC_NAME AS docName, TPD.LOCA AS loca 
+		FROM TB_PROFILE_DOC AS TPD
+		WHERE 1=1
+		AND TPD.USE_YN = 'Y'
+		AND TPD.PRO_CD = #{proCd}
+		ORDER BY TPD.PRO_TYPE ASC
+	</select>
+	
+	<update id="profileDelete" parameterType="HRMVO">		
+		UPDATE TB_PROFILE_LIST AS TPL SET
+		TPL.USE_YN = 'N'
+		WHERE 1=1
+		AND TPL.PRO_CD = #{proCd}
+	</update>
+	
+	<update id="proDocDelete" parameterType="HRMVO">		
+		UPDATE TB_PROFILE_DOC AS TPD SET
+		TPD.USE_YN = 'N'
+		WHERE 1=1
+		AND TPD.PRO_CD = #{proCd}
+	</update>
+	
+	<update id="proOneDocDelete" parameterType="HRMVO">		
+		UPDATE TB_PROFILE_DOC AS TPD SET
+		TPD.USE_YN = 'N'
+		WHERE 1=1
+		AND TPD.PRO_CD = #{proCd}
+		AND TPD.DOC_NAME = #{docName}
+	</update>
+	
+	<update id="profileUpdate" parameterType="HRMVO">		
+		UPDATE TB_PROFILE_LIST AS TPL SET
+		TPL.PRO_NAME = #{proName},
+		TPL.DEP = #{dep},
+		TPL.STAT = #{stat},
+		TPL.RMK = #{rmk},
+		TPL.CT_ID = #{ctId}
+		WHERE 1=1
+		AND TPL.PRO_CD = #{proCd}
+	</update>
+	
+	<select id="getFormList" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TFL.FORM_CD AS formCd, TFL.FORM_NAME AS formName, TFL.REG_USER AS regUser, TFL.REG_DATE AS regdate, TFL.RMK AS rmk, 
+				TFC.CT_NAME AS ctName
+		FROM TB_FORM_LIST AS TFL
+		LEFT JOIN TB_FORM_CT AS TFC
+		ON TFL.CT_ID = TFC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TFL.USE_YN = 'Y'
+	</select>
+	
+	<select id="getFormCdNum" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_FORM_LIST AS TFL
+		WHERE 1=1
+	</select>
+	
+	<insert id="formInsert" parameterType="HRMVO">
+		INSERT INTO TB_FORM_LIST(FORM_CD, FORM_NAME, REG_USER, REG_DATE, USE_YN, RMK, CT_ID)
+		VALUES(#{formCd}, #{formName}, #{regUser}, #{regDate}, 'Y', #{rmk}, #{ctId})
+	</insert>
+	
+	<select id="getForm" parameterType="String" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TFL.FORM_CD AS formCd, TFL.FORM_NAME AS formName, TFL.REG_USER AS regUser,
+			TFL.REG_DATE AS regDate, TFL.RMK AS rmk, TFC.CT_ID AS ctId, TFC.CT_NAME AS ctName
+		FROM TB_FORM_LIST AS TFL
+		LEFT JOIN TB_FORM_CT AS TFC
+		ON TFL.CT_ID = TFC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TFL.USE_YN = 'Y'
+		AND TFL.FORM_CD = #{formCd}
+	</select>
+	
+	<update id="formUpdate" parameterType="HRMVO">		
+		UPDATE TB_FORM_LIST AS TFL SET
+		TFL.FORM_NAME = #{formName},
+		TFL.REG_USER = #{regUser},
+		TFL.REG_DATE = #{regDate},
+		TFL.RMK = #{rmk},
+		TFL.CT_ID = #{ctId}
+		WHERE 1=1
+		AND TFL.FORM_CD = #{formCd}
+	</update>
+	
+	<update id="formDelete" parameterType="HRMVO">		
+		UPDATE TB_FORM_LIST AS TFL SET
+		TFL.USE_YN = 'N'
+		WHERE 1=1
+		AND TFL.FORM_CD = #{formCd}
+	</update>
+	
+	<update id="formDocDelete" parameterType="HRMVO">		
+		UPDATE TB_FORM_DOC AS TFD SET
+		TFD.USE_YN = 'N'
+		WHERE 1=1
+		AND TFD.FORM_CD = #{formCd}
+	</update>
+	
+	<insert id="formDocUpload" parameterType="HRMVO">
+		INSERT INTO TB_FORM_DOC(FORM_CD, DOC_NAME, LOCA, USE_YN)
+		VALUES(#{proCd}, #{docName}, #{loca}, 'Y')
+	</insert>
+
+	<select id="getEviList" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TEL.EVI_CD AS eviCd, TEL.EVI_NAME AS eviName, TEL.REG_USER AS regUser,
+			TEL.REG_DATE AS regDate, TEL.EXP_DATE AS expDate, TEL.RMK AS rmk, TEC.CT_NAME AS ctName
+		FROM TB_EVIDENCE_LIST AS TEL
+		LEFT JOIN TB_EVIDENCE_CT AS TEC
+		ON TEL.CT_ID = TEC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TEL.USE_YN = 'Y'
+	</select>
+	
+	<select id="getEviListFilter" parameterType="String" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TEL.EVI_CD AS eviCd, TEL.EVI_NAME AS eviName, TEL.REG_USER AS regUser,
+			TEL.REG_DATE AS regDate, TEL.EXP_DATE AS expDate, TEL.RMK AS rmk, TEC.CT_NAME AS ctName
+		FROM TB_EVIDENCE_LIST AS TEL
+		LEFT JOIN TB_EVIDENCE_CT AS TEC
+		ON TEL.CT_ID = TEC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TEL.USE_YN = 'Y'
+		AND TEC.CT_ID = #{ctId}
+	</select>
+	
+	<select id="getEviCdNum" resultType="int">
+		SELECT COUNT(*)
+		FROM TB_EVIDENCE_LIST AS TEL
+		WHERE 1=1
+	</select>
+	
+ 	<insert id="evidenceInsert" parameterType="HRMVO">
+		INSERT INTO TB_EVIDENCE_LIST(EVI_CD, EVI_NAME, REG_USER, REG_DATE, EXP_DATE, USE_YN, RMK, CT_ID)
+		VALUES(#{eviCd}, #{eviName}, #{regUser}, #{regDate}, #{expDate}, 'Y', #{rmk}, #{ctId})
+	</insert>
+
+ 	<insert id="evidenceDocUpload" parameterType="HRMVO">
+		INSERT INTO TB_EVIDENCE_DOC(EVI_CD, EVI_TYPE, DOC_NAME, LOCA, USE_YN)
+		VALUES(#{eviCd}, #{eviType}, #{docName}, #{loca}, 'Y')
+	</insert> 
+	
+	<select id="getEvidence" parameterType="String" resultType="HRMVO">
+		SELECT @rownum:=@rownum+1 AS NO, TEL.EVI_CD AS eviCd, TEL.EVI_NAME AS eviName, TEL.REG_USER AS regUser,
+			TEL.REG_DATE AS regDate, TEL.EXP_DATE AS expDate, TEL.RMK AS rmk, TEC.CT_ID AS ctId, TEC.CT_NAME AS ctName
+		FROM TB_EVIDENCE_LIST AS TEL
+		LEFT JOIN TB_EVIDENCE_CT AS TEC
+		ON TEL.CT_ID = TEC.CT_ID,
+			(SELECT @rownum:=0) TMP
+		WHERE 1=1
+		AND TEL.USE_YN = 'Y'
+		AND TEL.EVI_CD = #{eviCd}
+	</select>
+	
+	<update id="evidenceUpdate" parameterType="HRMVO">		
+		UPDATE TB_EVIDENCE_LIST AS TEL SET
+		TEL.EVI_NAME = #{eviName},
+		TEL.REG_USER = #{regUser},
+		TEL.REG_DATE = #{regDate},
+		TEL.EXP_DATE = #{expDate},
+		TEL.RMK = #{rmk},
+		TEL.CT_ID = #{ctId}
+		WHERE 1=1
+		AND TEL.EVI_CD = #{eviCd}
+	</update>
+	
+	<update id="evidenceDelete" parameterType="HRMVO">		
+		UPDATE TB_EVIDENCE_LIST AS TEL SET
+		TEL.USE_YN = 'N'
+		WHERE 1=1
+		AND TEL.EVI_CD = #{eviCd}
+	</update>
+	
+	<update id="evidenceDocDelete" parameterType="HRMVO">		
+		UPDATE TB_EVIDENCE_DOC AS TED SET
+		TED.USE_YN = 'N'
+		WHERE 1=1
+		AND TED.EVI_CD = #{eviCd}
+	</update>
+	
+	
+</mapper>

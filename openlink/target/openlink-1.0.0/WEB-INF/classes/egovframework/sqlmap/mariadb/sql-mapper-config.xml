@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <typeAliases>
+		<typeAlias alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+		<!-- <typeAlias alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/> -->
+		<!-- <typeAlias alias="sampleVO" type="egovframework.example.sample.service.SampleVO"/> -->
+		<typeAlias alias="userVO" type="egovframework.openlink.home.service.UserVO"/>
+		<typeAlias alias="boardVO" type="egovframework.openlink.home.service.BoardVO"/>
+		<typeAlias alias="cateVO" type="egovframework.openlink.home.service.CateVO"/>
+		<typeAlias alias="HRMVO" type="egovframework.openlink.home.service.HRMVO"/>
+    </typeAliases>
+</configuration>
